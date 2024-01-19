@@ -7,8 +7,8 @@ import importlib.metadata
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-project = 'asyncpygame'
-copyright = '2023, Mitō Nattōsai'
+project = 'asyncgui-ext-clock'
+copyright = '2024, Mitō Nattōsai'
 author = 'Mitō Nattōsai'
 release = importlib.metadata.version(project)
 
@@ -57,7 +57,7 @@ intersphinx_mapping = {
     'kivy': ('https://kivy.org/doc/master', None),
     'trio': ('https://trio.readthedocs.io/en/stable/', None),
     'asyncgui': ('https://asyncgui.github.io/asyncgui/', None),
-    'pygame': ('https://pyga.me/docs/', None),
+    # 'pygame': ('https://pyga.me/docs/', None),
 }
 
 
@@ -69,45 +69,24 @@ autodoc_default_options = {
 #    'undoc-members': True,
    'no-show-inheritance': True,
 }
-# autodoc_type_aliases = {
-#     'TimeUnit': 'TimeUnit',
-#     'TimerCallback': 'TimerCallback',
-# }
+
 
 # -- Options for tabs extension ---------------------------------------
 # https://sphinx-tabs.readthedocs.io/en/latest/
 sphinx_tabs_disable_tab_closing = True
 
 
-import re
-
 def modify_signature(app, what: str, name: str, obj, options, signature, return_annotation: str,
-                     prefix="asyncpygame.",
-                     len_prefix=len("asyncpygame."),
-                     int_pattern = re.compile(r"\bint\b"),
-                     group1={'TimerEvent'},
-                     # group2={'current_task', 'sleep_forever', 'open_nursery', },
-                     # group3={"TaskState." + s for s in "CREATED STARTED CANCELLED FINISHED".split()},
-                     # group4={'wait_all_cm', 'wait_any_cm', 'run_as_secondary', 'run_as_primary', 'run_as_daemon', },
-                     # group5={'open_nursery', },
+                     prefix="asyncgui_ext.clock.",
+                     len_prefix=len("asyncgui_ext.clock."),
+                     group1={'ClockEvent', },
                      ):
     if not name.startswith(prefix):
         return (signature, return_annotation, )
     name = name[len_prefix:]
-    # if return_annotation is not None:
-    #     return_annotation = int_pattern.sub("TimeUnit", return_annotation)
     if name in group1:
         print(f"Hide the signature of {name!r}")
         return ('', None)
-    # if name in group2:
-    #     print(f"Modify the signature of {name!r}")
-    #     return ('()', return_annotation)
-    # if name in group4:
-    #     print(f"add a return-annotation to {name!r}")
-    #     return (signature, '~typing.AsyncContextManager[Task]')
-    # if name in group5:
-    #     print(f"Modify the return-annotation of {name!r}")
-    #     return (signature, return_annotation.replace("AsyncIterator", "AsyncContextManager"))
     return (signature, return_annotation, )
 
 

@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "asyncgui-ext-timer"
-version = "0.1.0.dev0"
+name = "asyncgui-ext-clock"
+version = "0.1.0"
 description = ""
 authors = ["Nattōsai Mitō <flow4re2c@gmail.com>"]
 license = "MIT"
 readme = 'README.md'
-repository = 'https://github.com/asyncgui/asyncgui-ext-timer'
-homepage = 'https://github.com/asyncgui/asyncgui-ext-timer'
-keywords = ['async', 'pygame']
+repository = 'https://github.com/asyncgui/asyncgui-ext-clock'
+homepage = 'https://github.com/asyncgui/asyncgui-ext-clock'
+keywords = ['async', ]
 classifiers=[
     'Development Status :: 2 - Pre-Alpha',
     'License :: OSI Approved :: MIT License',
@@ -28,7 +28,6 @@ asyncgui = "~0.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
-flake8 = "^6.1.0"
 
 [tool.poetry.group.doc.dependencies]
 sphinx = "^7.2.6"
