@@ -70,3 +70,7 @@ pip install "asyncgui-ext-clock>=0.1,<0.2"
 
 - CPython 3.10
 - CPython 3.11
+
+## Misc
+
+- [YouTube Demo](https://youtu.be/kPVzO8fF0yg) (with Kivy)
