@@ -40,3 +40,8 @@ def test_move_on_after(clock):
     clock.tick(10)
     assert task_state == 'B'
     assert task.finished
+
+
+def test_weakref(clock):
+    from weakref import ref
+    ref(clock)
