@@ -1,3 +1,5 @@
+import pytest
+
 def test_sleep(clock):
     from asyncgui import start
     task_state = None
@@ -45,3 +47,14 @@ def test_move_on_after(clock):
 def test_weakref(clock):
     from weakref import ref
     ref(clock)
+
+
+@pytest.mark.parametrize("n", range(3))
+def test_n_frames(clock, n):
+    from asyncgui import start
+
+    task = start(clock.n_frames(n))
+    for __ in range(n):
+        assert not task.finished
+        clock.tick(0)
+    assert task.finished
