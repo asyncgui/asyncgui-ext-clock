@@ -18,7 +18,7 @@ ClockCallback: TypeAlias = Callable[[TimeUnit], None]
 
 class Transition:
     '''
-    :class:`kivy.animation.AnimationTransition`
+    A copy of :class:`kivy.animation.AnimationTransition`.
     '''
     def linear(p):
         return p
