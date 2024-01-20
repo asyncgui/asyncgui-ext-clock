@@ -334,6 +334,44 @@ class Clock:
         '''
         return wait_any_cm(self.sleep(timeout))
 
+    @types.coroutine
+    def n_frames(self, n: int) -> Awaitable:
+        '''
+        Waits for a specified number of times the :meth:`tick` to be called.
+
+        .. code-block::
+
+            await clock.n_frames(2)
+
+        If you want to wait for one time, :meth:`sleep` is preferable for a performance reason.
+
+        .. code-block::
+
+            await clock.sleep(0)
+
+        .. versionadded:: 0.1.1
+        '''
+        if n < 0:
+            raise ValueError(f"Waiting for {n} frames doesn't make sense.")
+        if not n:
+            return
+
+        task = (yield _current_task)[0][0]
+
+        def callback(dt):
+            nonlocal n
+            n -= 1
+            if not n:
+                task._step()
+                return False
+
+        event = self.schedule_interval(callback, 0)
+
+        try:
+            yield _sleep_forever
+        finally:
+            event.cancel()
+
     async def anim_with_dt(self, *, step=0) -> AsyncIterator[TimeUnit]:
         '''
         An async form of :meth:`schedule_interval`.
