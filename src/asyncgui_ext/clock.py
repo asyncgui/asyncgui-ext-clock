@@ -1,10 +1,16 @@
-__all__ = ('ClockEvent', 'Clock', 'Transition', )
+__all__ = (
+    'ClockEvent', 'Clock',
+    'sleep', 'move_on_after', 'n_frames',
+    'anim_attrs', 'anim_attrs_abbr',
+    'anim_with_dt', 'anim_with_et', 'anim_with_dt_et', 'anim_with_ratio', 'anim_with_dt_et_ratio',
+    'interpolate_scalar', 'interpolate_sequence',
+    'run_in_thread', 'run_in_executor',
+)
 
 import types
 from typing import TypeAlias, TypeVar
 from collections.abc import Callable, Awaitable, AsyncIterator
 from functools import partial
-import math
 from dataclasses import dataclass
 from contextlib import AbstractAsyncContextManager
 from threading import Thread
@@ -14,187 +20,6 @@ from asyncgui import ISignal, Cancelled, Task, wait_any_cm, _sleep_forever, _cur
 
 TimeUnit = TypeVar("TimeUnit")
 ClockCallback: TypeAlias = Callable[[TimeUnit], None]
-
-
-class Transition:
-    '''
-    A copy of :class:`kivy.animation.AnimationTransition`.
-    '''
-    def linear(p):
-        return p
-
-    def in_quad(p):
-        return p * p
-
-    def out_quad(p):
-        return -1.0 * p * (p - 2.0)
-
-    def in_out_quad(p):
-        p = p * 2
-        if p < 1:
-            return 0.5 * p * p
-        p -= 1.0
-        return -0.5 * (p * (p - 2.0) - 1.0)
-
-    def in_cubic(p):
-        return p * p * p
-
-    def out_cubic(p):
-        p = p - 1.0
-        return p * p * p + 1.0
-
-    def in_out_cubic(p):
-        p = p * 2
-        if p < 1:
-            return 0.5 * p * p * p
-        p -= 2
-        return 0.5 * (p * p * p + 2.0)
-
-    def in_quart(p):
-        return p * p * p * p
-
-    def out_quart(p):
-        p = p - 1.0
-        return -1.0 * (p * p * p * p - 1.0)
-
-    def in_out_quart(p):
-        p = p * 2
-        if p < 1:
-            return 0.5 * p * p * p * p
-        p -= 2
-        return -0.5 * (p * p * p * p - 2.0)
-
-    def in_quint(p):
-        return p * p * p * p * p
-
-    def out_quint(p):
-        p = p - 1.0
-        return p * p * p * p * p + 1.0
-
-    def in_out_quint(p):
-        p = p * 2
-        if p < 1:
-            return 0.5 * p * p * p * p * p
-        p -= 2.0
-        return 0.5 * (p * p * p * p * p + 2.0)
-
-    def in_sine(p, cos=math.cos, pi=math.pi):
-        return -1.0 * cos(p * (pi / 2.0)) + 1.0
-
-    def out_sine(p, sin=math.sin, pi=math.pi):
-        return sin(p * (pi / 2.0))
-
-    def in_out_sine(p, cos=math.cos, pi=math.pi):
-        return -0.5 * (cos(pi * p) - 1.0)
-
-    def in_expo(p, pow=pow):
-        if p == 0:
-            return 0.0
-        return pow(2, 10 * (p - 1.0))
-
-    def out_expo(p, pow=pow):
-        if p == 1.0:
-            return 1.0
-        return -pow(2, -10 * p) + 1.0
-
-    def in_out_expo(p, pow=pow):
-        if p == 0:
-            return 0.0
-        if p == 1.:
-            return 1.0
-        p = p * 2
-        if p < 1:
-            return 0.5 * pow(2, 10 * (p - 1.0))
-        p -= 1.0
-        return 0.5 * (-pow(2, -10 * p) + 2.0)
-
-    def in_circ(p, sqrt=math.sqrt):
-        return -1.0 * (sqrt(1.0 - p * p) - 1.0)
-
-    def out_circ(p, sqrt=math.sqrt):
-        p = p - 1.0
-        return sqrt(1.0 - p * p)
-
-    def in_out_circ(p, sqrt=math.sqrt):
-        p = p * 2
-        if p < 1:
-            return -0.5 * (sqrt(1.0 - p * p) - 1.0)
-        p -= 2.0
-        return 0.5 * (sqrt(1.0 - p * p) + 1.0)
-
-    def in_elastic(p, sin=math.sin, pi=math.pi, pow=pow):
-        p = .3
-        s = p / 4.0
-        q = p
-        if q == 1:
-            return 1.0
-        q -= 1.0
-        return -(pow(2, 10 * q) * sin((q - s) * (2 * pi) / p))
-
-    def out_elastic(p, sin=math.sin, pi=math.pi, pow=pow):
-        p = .3
-        s = p / 4.0
-        q = p
-        if q == 1:
-            return 1.0
-        return pow(2, -10 * q) * sin((q - s) * (2 * pi) / p) + 1.0
-
-    def in_out_elastic(p, sin=math.sin, pi=math.pi, pow=pow):
-        p = .3 * 1.5
-        s = p / 4.0
-        q = p * 2
-        if q == 2:
-            return 1.0
-        if q < 1:
-            q -= 1.0
-            return -.5 * (pow(2, 10 * q) * sin((q - s) * (2.0 * pi) / p))
-        else:
-            q -= 1.0
-            return pow(2, -10 * q) * sin((q - s) * (2.0 * pi) / p) * .5 + 1.0
-
-    def in_back(p):
-        return p * p * ((1.70158 + 1.0) * p - 1.70158)
-
-    def out_back(p):
-        p = p - 1.0
-        return p * p * ((1.70158 + 1) * p + 1.70158) + 1.0
-
-    def in_out_back(p):
-        p = p * 2.
-        s = 1.70158 * 1.525
-        if p < 1:
-            return 0.5 * (p * p * ((s + 1.0) * p - s))
-        p -= 2.0
-        return 0.5 * (p * p * ((s + 1.0) * p + s) + 2.0)
-
-    def _out_bounce_internal(t, d):
-        p = t / d
-        if p < (1.0 / 2.75):
-            return 7.5625 * p * p
-        elif p < (2.0 / 2.75):
-            p -= (1.5 / 2.75)
-            return 7.5625 * p * p + .75
-        elif p < (2.5 / 2.75):
-            p -= (2.25 / 2.75)
-            return 7.5625 * p * p + .9375
-        else:
-            p -= (2.625 / 2.75)
-            return 7.5625 * p * p + .984375
-
-    def _in_bounce_internal(t, d, _out_bounce_internal=_out_bounce_internal):
-        return 1.0 - _out_bounce_internal(d - t, d)
-
-    def in_bounce(p, _in_bounce_internal=_in_bounce_internal):
-        return _in_bounce_internal(p, 1.)
-
-    def out_bounce(p, _out_bounce_internal=_out_bounce_internal):
-        return _out_bounce_internal(p, 1.)
-
-    def in_out_bounce(p, _in_bounce_internal=_in_bounce_internal, _out_bounce_internal=_out_bounce_internal):
-        p = p * 2.
-        if p < 1.:
-            return _in_bounce_internal(p, 1.) * .5
-        return _out_bounce_internal(p - 1., 1.) * .5 + .5
 
 
 @dataclass(slots=True)
@@ -234,6 +59,7 @@ class Clock:
     def tick(self, delta_time):
         '''
         Advances the clock time and triggers scheduled events accordingly.
+        The ``delta_time`` must be 0 or greater.
         '''
         self._cur_time += delta_time
         cur_time = self._cur_time
@@ -300,406 +126,435 @@ class Clock:
         self._events_to_be_added.append(event)
         return event
 
-    async def sleep(self, duration) -> Awaitable:
-        '''
-        Waits for a specified period of time.
 
-        .. code-block::
+async def sleep(clock: Clock, duration) -> Awaitable:
+    '''
+    Waits for a specified period of time.
 
-            await clock.sleep(10)
-        '''
-        sig = ISignal()
-        event = self.schedule_once(sig.set, duration)
+    .. code-block::
 
-        try:
-            await sig.wait()
-        except Cancelled:
-            event.cancel()
-            raise
+        await sleep(clock, 10)
+    '''
+    sig = ISignal()
+    event = clock.schedule_once(sig.set, duration)
 
-    def move_on_after(self, timeout) -> AbstractAsyncContextManager[Task]:
-        '''
-        Returns an async context manager that applies a time limit to its code block,
-        like :func:`trio.move_on_after` does.
+    try:
+        await sig.wait()
+    except Cancelled:
+        event.cancel()
+        raise
 
-        .. code-block::
 
-            async with clock.move_on_after(10) as bg_task:
-                ...
+def move_on_after(clock: Clock, timeout) -> AbstractAsyncContextManager[Task]:
+    '''
+    Returns an async context manager that applies a time limit to its code block,
+    like :func:`trio.move_on_after` does.
 
-            if bg_task.finished:
-                print("The code block was interrupted due to a timeout")
-            else:
-                print("The code block exited gracefully.")
-        '''
-        return wait_any_cm(self.sleep(timeout))
+    .. code-block::
 
-    @types.coroutine
-    def n_frames(self, n: int) -> Awaitable:
-        '''
-        Waits for a specified number of times the :meth:`tick` to be called.
+        async with move_on_after(clock, 10) as bg_task:
+            ...
 
-        .. code-block::
+        if bg_task.finished:
+            print("The code block was interrupted due to a timeout")
+        else:
+            print("The code block exited gracefully.")
+    '''
+    return wait_any_cm(sleep(clock, timeout))
 
-            await clock.n_frames(2)
 
-        If you want to wait for one time, :meth:`sleep` is preferable for a performance reason.
+@types.coroutine
+def n_frames(clock: Clock, n: int) -> Awaitable:
+    '''
+    Waits for a specified number of times the :meth:`Clock.tick` to be called.
 
-        .. code-block::
+    .. code-block::
 
-            await clock.sleep(0)
+        await n_frames(clock, 2)
 
-        .. versionadded:: 0.1.1
-        '''
-        if n < 0:
-            raise ValueError(f"Waiting for {n} frames doesn't make sense.")
+    If you want to wait for one time, :func:`sleep` is preferable for a performance reason.
+
+    .. code-block::
+
+        await sleep(clock, 0)
+    '''
+    if n < 0:
+        raise ValueError(f"Waiting for {n} frames doesn't make sense.")
+    if not n:
+        return
+
+    task = (yield _current_task)[0][0]
+
+    def callback(dt):
+        nonlocal n
+        n -= 1
         if not n:
-            return
-
-        task = (yield _current_task)[0][0]
-
-        def callback(dt):
-            nonlocal n
-            n -= 1
-            if not n:
-                task._step()
-                return False
-
-        event = self.schedule_interval(callback, 0)
-
-        try:
-            yield _sleep_forever
-        finally:
-            event.cancel()
-
-    async def anim_with_dt(self, *, step=0) -> AsyncIterator[TimeUnit]:
-        '''
-        An async form of :meth:`schedule_interval`.
-
-        .. code-block::
-
-            async for dt in clock.anim_with_dt(step=10):
-                print(dt)
-                if some_condition:
-                    break
-
-        The code above is quivalent to the code below.
-
-        .. code-block::
-
-            def callback(dt):
-                print(dt)
-                if some_condition:
-                    return False
-
-            clock.schedule_interval(callback, 10)
-
-        **Restriction**
-
-        You are not allowed to perform any kind of async operations during the loop.
-
-        .. code-block::
-
-            async for dt in clock.anim_with_dt():
-                await awaitable  # NOT ALLOWED
-                async with async_context_manager:  # NOT ALLOWED
-                    ...
-                async for __ in async_iterator:  # NOT ALLOWED
-                    ...
-
-        This is also true for other ``anim_with_xxx`` APIs.
-        '''
-        async with repeat_sleeping(self, step) as sleep:
-            while True:
-                yield await sleep()
-
-    async def anim_with_et(self, *, step=0) -> AsyncIterator[TimeUnit]:
-        '''
-        Total elapsed time of iterations.
-
-        .. code-block::
-
-            timeout = ...
-            async for et in clock.anim_with_et(...):
-                ...
-                if et > timeout:
-                    break
-        '''
-        et = 0.
-        async with repeat_sleeping(self, step) as sleep:
-            while True:
-                et += await sleep()
-                yield et
-
-    async def anim_with_dt_et(self, *, step=0) -> AsyncIterator[tuple[TimeUnit, TimeUnit]]:
-        '''
-        :meth:`anim_with_dt` and :meth:`anim_with_et` combined.
-
-        .. code-block::
-
-            async for dt, et in clock.anim_with_dt_et(...):
-                ...
-        '''
-        et = 0.
-        async with repeat_sleeping(self, step) as sleep:
-            while True:
-                dt = await sleep()
-                et += dt
-                yield dt, et
-
-    async def anim_with_ratio(self, *, duration, step=0) -> AsyncIterator[float]:
-        '''
-        .. code-block::
-
-            async for p in clock.anim_with_ratio(duration=...):
-                print(p * 100, "%")
-        '''
-        if not duration:
-            await self.sleep(step)
-            yield 1.0
-            return
-        et = 0.
-        async with repeat_sleeping(self, step) as sleep:
-            while et < duration:
-                et += await sleep()
-                yield et / duration
-
-    async def anim_with_dt_et_ratio(self, *, duration, step=0) -> AsyncIterator[tuple[TimeUnit, TimeUnit, float]]:
-        '''
-        :meth:`anim_with_dt`, :meth:`anim_with_et` and :meth:`anim_with_ratio` combined.
-
-        .. code-block::
-
-            async for dt, et, p in clock.anim_with_dt_et_ratio(...):
-                ...
-        '''
-        async with repeat_sleeping(self, step) as sleep:
-            if not duration:
-                dt = await sleep()
-                yield dt, dt, 1.0
-                return
-            et = 0.
-            while et < duration:
-                dt = await sleep()
-                et += dt
-                yield dt, et, et / duration
-
-    async def interpolate_scalar(self, start, end, *, duration, step=0, transition=Transition.linear) -> AsyncIterator:
-        '''
-        Interpolates between the values ``start`` and ``end`` in an async-manner.
-
-        .. code-block::
-
-            async for v in clock.interpolate(0, 100, duration=100, step=30):
-                print(int(v))
-
-        ============ ======
-        elapsed time output
-        ============ ======
-        0            0
-        30           30
-        60           60
-        90           90
-        **120**      100
-        ============ ======
-        '''
-        slope = end - start
-        yield transition(0.) * slope + start
-        async for p in self.anim_with_ratio(step=step, duration=duration):
-            if p >= 1.0:
-                break
-            yield transition(p) * slope + start
-        yield transition(1.) * slope + start
-
-    async def interpolate_sequence(self, start, end, *, duration, step=0, transition=Transition.linear,
-                                   output_type=tuple) -> AsyncIterator:
-        '''
-        Same as :meth:`interpolate_scalar` except this one is for sequence type.
-
-        .. code-block::
-
-            async for v in clock.interpolate_sequence([0, 50], [100, 100], duration=100, step=30):
-                print(v)
-
-        ============ ==========
-        elapsed time output
-        ============ ==========
-        0            (0, 50)
-        30           (30, 65)
-        60           (60, 80)
-        90           (90, 95)
-        **120**      (100, 100)
-        ============ ==========
-        '''
-        zip_ = zip
-        slope = tuple(end_elem - start_elem for end_elem, start_elem in zip_(end, start))
-
-        p = transition(0.)
-        yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
-
-        async for p in self.anim_with_ratio(step=step, duration=duration):
-            if p >= 1.0:
-                break
-            p = transition(p)
-            yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
-
-        p = transition(1.)
-        yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
-
-    async def run_in_thread(self, func, *, daemon=None, polling_interval) -> Awaitable:
-        '''
-        Creates a new thread, runs a function within it, then waits for the completion of that function.
-
-        .. code-block::
-
-            return_value = await clock.run_in_thread(func)
-        '''
-        return_value = None
-        exception = None
-        done = False
-
-        def wrapper():
-            nonlocal return_value, done, exception
-            try:
-                return_value = func()
-            except Exception as e:
-                exception = e
-            finally:
-                done = True
-
-        Thread(target=wrapper, daemon=daemon).start()
-        async with repeat_sleeping(self, polling_interval) as sleep:
-            while not done:
-                await sleep()
-        if exception is not None:
-            raise exception
-        return return_value
-
-    async def run_in_executor(self, executer: ThreadPoolExecutor, func, *, polling_interval) -> Awaitable:
-        '''
-        Runs a function within a :class:`concurrent.futures.ThreadPoolExecutor`, and waits for the completion of the
-        function.
-
-        .. code-block::
-
-            executor = ThreadPoolExecutor()
-            return_value = await clock.run_in_executor(executor, func)
-        '''
-        return_value = None
-        exception = None
-        done = False
-
-        def wrapper():
-            nonlocal return_value, done, exception
-            try:
-                return_value = func()
-            except Exception as e:
-                exception = e
-            finally:
-                done = True
-
-        future = executer.submit(wrapper)
-        try:
-            async with repeat_sleeping(self, polling_interval) as sleep:
-                while not done:
-                    await sleep()
-        except Cancelled:
-            future.cancel()
-            raise
-        if exception is not None:
-            raise exception
-        return return_value
-
-    def _update(setattr, zip, min, obj, duration, transition, output_seq_type, anim_params, task, p_time, dt):
-        time = p_time[0] + dt
-        p_time[0] = time
-
-        # calculate progression
-        progress = min(1., time / duration)
-        t = transition(progress)
-
-        # apply progression on obj
-        for attr_name, org_value, slope, is_seq in anim_params:
-            if is_seq:
-                new_value = output_seq_type(
-                    slope_elem * t + org_elem
-                    for org_elem, slope_elem in zip(org_value, slope)
-                )
-                setattr(obj, attr_name, new_value)
-            else:
-                setattr(obj, attr_name, slope * t + org_value)
-
-        # time to stop ?
-        if progress >= 1.:
             task._step()
             return False
 
-    _update = partial(_update, setattr, zip, min)
+    event = clock.schedule_interval(callback, 0)
 
-    @types.coroutine
-    def _anim_attrs(
-            self, obj, duration, step, transition, output_seq_type, animated_properties,
-            getattr=getattr, isinstance=isinstance, tuple=tuple, str=str, partial=partial, native_seq_types=(tuple, list),
-            zip=zip, Transition=Transition, _update=_update,
-            _current_task=_current_task, _sleep_forever=_sleep_forever, /):
-        if isinstance(transition, str):
-            transition = getattr(Transition, transition)
+    try:
+        yield _sleep_forever
+    finally:
+        event.cancel()
 
-        # get current values & calculate slopes
-        anim_params = tuple(
-            (
-                org_value := getattr(obj, attr_name),
-                is_seq := isinstance(org_value, native_seq_types),
-                (
-                    org_value := tuple(org_value),
-                    slope := tuple(goal_elem - org_elem for goal_elem, org_elem in zip(goal_value, org_value)),
-                ) if is_seq else (slope := goal_value - org_value),
-            ) and (attr_name, org_value, slope, is_seq, )
-            for attr_name, goal_value in animated_properties.items()
-        )
 
+async def anim_with_dt(clock: Clock, *, step=0) -> AsyncIterator[TimeUnit]:
+    '''
+    An async form of :meth:`Clock.schedule_interval`.
+
+    .. code-block::
+
+        async for dt in anim_with_dt(clock, step=10):
+            print(dt)
+            if some_condition:
+                break
+
+    The code above is quivalent to the below.
+
+    .. code-block::
+
+        def callback(dt):
+            print(dt)
+            if some_condition:
+                return False
+
+        clock.schedule_interval(callback, 10)
+
+    **Restriction**
+
+    You are not allowed to perform any kind of async operations during the loop.
+
+    .. code-block::
+
+        async for dt in anim_with_dt(clock):
+            await awaitable  # NOT ALLOWED
+            async with async_context_manager:  # NOT ALLOWED
+                ...
+            async for __ in async_iterator:  # NOT ALLOWED
+                ...
+
+    This is also true of other ``anim_with_xxx`` APIs.
+    '''
+    async with _repeat_sleeping(clock, step) as sleep:
+        while True:
+            yield await sleep()
+
+
+async def anim_with_et(clock: Clock, *, step=0) -> AsyncIterator[TimeUnit]:
+    '''
+    Same as :func:`anim_with_dt` except this one generates the total elapsed time of the loop instead of the elapsed
+    time between frames.
+
+    .. code-block::
+
+        timeout = ...
+        async for et in anim_with_et(clock):
+            ...
+            if et > timeout:
+                break
+    '''
+    et = 0
+    async with _repeat_sleeping(clock, step) as sleep:
+        while True:
+            et += await sleep()
+            yield et
+
+
+async def anim_with_dt_et(clock: Clock, *, step=0) -> AsyncIterator[tuple[TimeUnit, TimeUnit]]:
+    '''
+    :func:`anim_with_dt` and :func:`anim_with_et` combined.
+
+    .. code-block::
+
+        async for dt, et in anim_with_dt_et(clock):
+            ...
+    '''
+    et = 0
+    async with _repeat_sleeping(clock, step) as sleep:
+        while True:
+            dt = await sleep()
+            et += dt
+            yield dt, et
+
+
+async def anim_with_ratio(clock: Clock, *, duration, step=0) -> AsyncIterator[float]:
+    '''
+    Same as :func:`anim_with_et` except this one generates the total progression ratio of the loop.
+
+    .. code-block::
+
+        async for p in anim_with_ratio(clock, duration=...):
+            print(p * 100, "%")
+
+    If you want to progress at a non-consistant rate, you may find the
+    `source code <https://github.com/kivy/kivy/blob/master/kivy/animation.py>`__
+    of the :class:`kivy.animation.AnimationTransition` helpful.
+
+    .. code-block::
+
+        async for p in anim_with_ratio(clock, duration=...):
+            p = p * p  # quadratic
+            print(p * 100, "%")
+    '''
+    if not duration:
+        await sleep(clock, step)
+        yield 1.0
+        return
+    et = 0
+    async with _repeat_sleeping(clock, step) as sleep_:
+        while et < duration:
+            et += await sleep_()
+            yield et / duration
+
+
+async def anim_with_dt_et_ratio(clock: Clock, *, duration, step=0) -> AsyncIterator[tuple[TimeUnit, TimeUnit, float]]:
+    '''
+    :func:`anim_with_dt`, :func:`anim_with_et` and :func:`anim_with_ratio` combined.
+
+    .. code-block::
+
+        async for dt, et, p in anim_with_dt_et_ratio(clock):
+            ...
+    '''
+    async with _repeat_sleeping(clock, step) as sleep:
+        if not duration:
+            dt = await sleep()
+            yield dt, dt, 1.0
+            return
+        et = 0.
+        while et < duration:
+            dt = await sleep()
+            et += dt
+            yield dt, et, et / duration
+
+
+def _linear(p):
+    return p
+
+
+async def interpolate_scalar(clock, start, end, *, duration, step=0, transition=_linear) -> AsyncIterator:
+    '''
+    Interpolates between the values ``start`` and ``end`` in an async-manner.
+
+    .. code-block::
+
+        async for v in interpolate(clock, 0, 100, duration=100, step=30):
+            print(int(v))
+
+    ============ ======
+    elapsed time output
+    ============ ======
+    0            0
+    30           30
+    60           60
+    90           90
+    **120**      100
+    ============ ======
+    '''
+    slope = end - start
+    yield transition(0.) * slope + start
+    async for p in anim_with_ratio(clock, step=step, duration=duration):
+        if p >= 1.0:
+            break
+        yield transition(p) * slope + start
+    yield transition(1.) * slope + start
+
+
+async def interpolate_sequence(clock, start, end, *, duration, step=0, transition=_linear, output_type=tuple) -> AsyncIterator:
+    '''
+    Same as :func:`interpolate_scalar` except this one is for sequence type.
+
+    .. code-block::
+
+        async for v in interpolate_sequence(clock, [0, 50], [100, 100], duration=100, step=30):
+            print(v)
+
+    ============ ==========
+    elapsed time output
+    ============ ==========
+    0            (0, 50)
+    30           (30, 65)
+    60           (60, 80)
+    90           (90, 95)
+    **120**      (100, 100)
+    ============ ==========
+    '''
+    zip_ = zip
+    slope = tuple(end_elem - start_elem for end_elem, start_elem in zip_(end, start))
+
+    p = transition(0.)
+    yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+
+    async for p in anim_with_ratio(clock, step=step, duration=duration):
+        if p >= 1.0:
+            break
+        p = transition(p)
+        yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+
+    p = transition(1.)
+    yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+
+
+async def run_in_thread(clock: Clock, func, *, daemon=None, polling_interval) -> Awaitable:
+    '''
+    Creates a new thread, runs a function within it, then waits for the completion of that function.
+
+    .. code-block::
+
+        return_value = await run_in_thread(clock, func, polling_interval=...)
+    '''
+    return_value = None
+    exception = None
+    done = False
+
+    def wrapper():
+        nonlocal return_value, done, exception
         try:
-            event = self.schedule_interval(
-                partial(_update, obj, duration, transition, output_seq_type, anim_params, (yield _current_task)[0][0], [0, ]),
-                step,
-            )
-            yield _sleep_forever
+            return_value = func()
+        except Exception as e:
+            exception = e
         finally:
-            event.cancel()
+            done = True
 
-    del _update
-
-    def anim_attrs(self, obj, *, duration, step=0, transition=Transition.linear, output_seq_type=tuple,
-                   **animated_properties) -> Awaitable:
-        '''
-        Animates attibutes of any object.
-
-        .. code-block::
-
-            import types
-
-            obj = types.SimpleNamespace(x=0, size=(200, 300))
-            await clock.anim_attrs(obj, x=100, size=(400, 400))
-
-        The ``output_seq_type`` parameter.
-
-        .. code-block::
-
-            obj = types.SimpleNamespace(size=(200, 300))
-            await clock.anim_attrs(obj, size=(400, 400), output_seq_type=list)
-            assert type(obj.size) is list
-        '''
-        return self._anim_attrs(obj, duration, step, transition, output_seq_type, animated_properties)
-
-    def anim_attrs_abbr(self, obj, *, d, s=0, t=Transition.linear, output_seq_type=tuple,
-                        **animated_properties) -> Awaitable:
-        '''
-        :meth:`anim_attrs` cannot animate attributes named ``step``, ``duration`` and ``transition`` but this one can.
-        '''
-        return self._anim_attrs(obj, d, s, t, output_seq_type, animated_properties)
+    Thread(target=wrapper, daemon=daemon).start()
+    async with _repeat_sleeping(clock, polling_interval) as sleep:
+        while not done:
+            await sleep()
+    if exception is not None:
+        raise exception
+    return return_value
 
 
-class repeat_sleeping:
+async def run_in_executor(clock: Clock, executer: ThreadPoolExecutor, func, *, polling_interval) -> Awaitable:
+    '''
+    Runs a function within a :class:`concurrent.futures.ThreadPoolExecutor`, and waits for the completion of the
+    function.
+
+    .. code-block::
+
+        executor = ThreadPoolExecutor()
+        return_value = await run_in_executor(clock, executor, func, polling_interval=...)
+    '''
+    return_value = None
+    exception = None
+    done = False
+
+    def wrapper():
+        nonlocal return_value, done, exception
+        try:
+            return_value = func()
+        except Exception as e:
+            exception = e
+        finally:
+            done = True
+
+    future = executer.submit(wrapper)
+    try:
+        async with _repeat_sleeping(clock, polling_interval) as sleep:
+            while not done:
+                await sleep()
+    except Cancelled:
+        future.cancel()
+        raise
+    if exception is not None:
+        raise exception
+    return return_value
+
+
+def _update(setattr, zip, min, obj, duration, transition, output_seq_type, anim_params, task, p_time, dt):
+    time = p_time[0] + dt
+    p_time[0] = time
+
+    # calculate progression
+    progress = min(1., time / duration)
+    t = transition(progress)
+
+    # apply progression on obj
+    for attr_name, org_value, slope, is_seq in anim_params:
+        if is_seq:
+            new_value = output_seq_type(
+                slope_elem * t + org_elem
+                for org_elem, slope_elem in zip(org_value, slope)
+            )
+            setattr(obj, attr_name, new_value)
+        else:
+            setattr(obj, attr_name, slope * t + org_value)
+
+    # time to stop ?
+    if progress >= 1.:
+        task._step()
+        return False
+
+
+_update = partial(_update, setattr, zip, min)
+
+
+@types.coroutine
+def _anim_attrs(
+        clock: Clock, obj, duration, step, transition, output_seq_type, animated_properties,
+        getattr=getattr, isinstance=isinstance, tuple=tuple, partial=partial, native_seq_types=(tuple, list),
+        zip=zip, _update=_update,
+        _current_task=_current_task, _sleep_forever=_sleep_forever, /):
+
+    # get current values & calculate slopes
+    anim_params = tuple(
+        (
+            org_value := getattr(obj, attr_name),
+            is_seq := isinstance(org_value, native_seq_types),
+            (
+                org_value := tuple(org_value),
+                slope := tuple(goal_elem - org_elem for goal_elem, org_elem in zip(goal_value, org_value)),
+            ) if is_seq else (slope := goal_value - org_value),
+        ) and (attr_name, org_value, slope, is_seq, )
+        for attr_name, goal_value in animated_properties.items()
+    )
+
+    try:
+        event = clock.schedule_interval(
+            partial(_update, obj, duration, transition, output_seq_type, anim_params, (yield _current_task)[0][0], [0, ]),
+            step,
+        )
+        yield _sleep_forever
+    finally:
+        event.cancel()
+
+
+del _update
+
+
+def anim_attrs(clock, obj, *, duration, step=0, transition=_linear, output_seq_type=tuple,
+               **animated_properties) -> Awaitable:
+    '''
+    Animates attibutes of any object.
+
+    .. code-block::
+
+        import types
+
+        obj = types.SimpleNamespace(x=0, size=(200, 300))
+        await anim_attrs(clock, obj, x=100, size=(400, 400))
+
+    The ``output_seq_type`` parameter.
+
+    .. code-block::
+
+        obj = types.SimpleNamespace(size=(200, 300))
+        await anim_attrs(clock, obj, size=(400, 400), output_seq_type=list)
+        assert type(obj.size) is list
+    '''
+    return _anim_attrs(clock, obj, duration, step, transition, output_seq_type, animated_properties)
+
+
+def anim_attrs_abbr(clock, obj, *, d, s=0, t=_linear, output_seq_type=tuple, **animated_properties) -> Awaitable:
+    '''
+    :func:`anim_attrs` cannot animate attributes named ``step``, ``duration`` and ``transition`` but this one can.
+    '''
+    return _anim_attrs(clock, obj, d, s, t, output_seq_type, animated_properties)
+
+
+class _repeat_sleeping:
     __slots__ = ('_timer', '_interval', '_event', )
 
     def __init__(self, clock: Clock, interval):

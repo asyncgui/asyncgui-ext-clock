@@ -87,23 +87,8 @@ def modify_signature(app, what: str, name: str, obj, options, signature, return_
     if name in group1:
         print(f"Hide the signature of {name!r}")
         return ('', None)
-    if name.startswith("Transition."):
-        return ('(p)', None)
     return (signature, return_annotation, )
-
-
-def modify_docstring(app, what, name, obj, options, lines,
-                     prefix="asyncgui_ext.clock.", len_prefix=len("asyncgui_ext.clock."),
-                     group1={'ClockEvent', },
-                     ):
-    if not name.startswith(prefix):
-        return
-    name = name[len_prefix:]
-    if name.startswith("Transition."):
-        name = name[len("Transition."):]
-        lines.append(f".. image:: images/transition/{name}.png")
 
 
 def setup(app):
     app.connect('autodoc-process-signature', modify_signature)
-    app.connect('autodoc-process-docstring', modify_docstring)

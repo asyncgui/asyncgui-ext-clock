@@ -1,9 +1,9 @@
-=============
-API Reference
-=============
+==========================
+Clock (AsyncGui Extension)
+==========================
 
+.. toctree::
+   :hidden:
 
-.. automodule:: asyncgui_ext.clock
-    :members:
-    :undoc-members:
-    :exclude-members:
+   readme_jp
+   reference
