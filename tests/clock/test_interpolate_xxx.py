@@ -3,10 +3,11 @@ import pytest
 
 def test_interpolate_scalar(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import interpolate_scalar
     values = []
 
     async def async_fn():
-        async for v in clock.interpolate_scalar(100, 0, duration=100):
+        async for v in interpolate_scalar(clock, 100, 0, duration=100):
             values.append(int(v))
 
     task = start(async_fn())
@@ -25,10 +26,11 @@ def test_interpolate_scalar(clock):
 @pytest.mark.parametrize('step', [0, 10])
 def test_interpolate_scalar_zero_duration(clock, step):
     from asyncgui import start
+    from asyncgui_ext.clock import interpolate_scalar
     values = []
 
     async def async_fn():
-        async for v in clock.interpolate_scalar(100, 0, duration=0, step=step):
+        async for v in interpolate_scalar(clock, 100, 0, duration=0, step=step):
             values.append(int(v))
 
     task = start(async_fn())
@@ -40,10 +42,11 @@ def test_interpolate_scalar_zero_duration(clock, step):
 
 def test_interpolate_sequence(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import interpolate_sequence
     values = []
 
     async def async_fn():
-        async for v1, v2 in clock.interpolate_sequence([0, 100], [100, 0], duration=100):
+        async for v1, v2 in interpolate_sequence(clock, [0, 100], [100, 0], duration=100):
             values.append(int(v1))
             values.append(int(v2))
 
@@ -63,10 +66,11 @@ def test_interpolate_sequence(clock):
 @pytest.mark.parametrize('step', [0, 10])
 def test_interpolate_sequence_zero_duration(clock, step):
     from asyncgui import start
+    from asyncgui_ext.clock import interpolate_sequence
     values = []
 
     async def async_fn():
-        async for v1, v2 in clock.interpolate_sequence([0, 100], [100, 0], duration=0, step=step):
+        async for v1, v2 in interpolate_sequence(clock, [0, 100], [100, 0], duration=0, step=step):
             values.append(int(v1))
             values.append(int(v2))
 

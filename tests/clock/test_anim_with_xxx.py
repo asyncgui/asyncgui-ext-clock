@@ -1,9 +1,10 @@
 def test_anim_with_dt(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import anim_with_dt
     dt_list = []
 
     async def async_fn():
-        async for dt in clock.anim_with_dt(step=10):
+        async for dt in anim_with_dt(clock, step=10):
             dt_list.append(dt)
 
     task = start(async_fn())
@@ -23,10 +24,11 @@ def test_anim_with_dt(clock):
 
 def test_anim_with_et(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import anim_with_et
     et_list = []
 
     async def async_fn():
-        async for et in clock.anim_with_et(step=10):
+        async for et in anim_with_et(clock, step=10):
             et_list.append(et)
 
     task = start(async_fn())
@@ -47,10 +49,11 @@ def test_anim_with_et(clock):
 def test_anim_with_ratio(clock):
     from pytest import approx
     from asyncgui import start
+    from asyncgui_ext.clock import anim_with_ratio
     p_list = []
 
     async def async_fn():
-        async for p in clock.anim_with_ratio(step=10, duration=100):
+        async for p in anim_with_ratio(clock, step=10, duration=100):
             p_list.append(p)
 
     task = start(async_fn())
@@ -72,10 +75,11 @@ def test_anim_with_ratio(clock):
 
 def test_anim_with_ratio_zero_duration(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import anim_with_ratio
     p_list = []
 
     async def async_fn():
-        async for p in clock.anim_with_ratio(step=10, duration=0):
+        async for p in anim_with_ratio(clock, step=10, duration=0):
             p_list.append(p)
 
     task = start(async_fn())
@@ -89,10 +93,11 @@ def test_anim_with_ratio_zero_duration(clock):
 
 def test_anim_with_dt_et(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import anim_with_dt_et
     values = []
 
     async def async_fn():
-        async for v in clock.anim_with_dt_et(step=10):
+        async for v in anim_with_dt_et(clock, step=10):
             values.extend(v)
 
     task = start(async_fn())
@@ -114,10 +119,11 @@ def test_anim_with_dt_et(clock):
 def test_anim_with_dt_et_ratio(clock):
     from pytest import approx
     from asyncgui import start
+    from asyncgui_ext.clock import anim_with_dt_et_ratio
     values = []
 
     async def async_fn():
-        async for v in clock.anim_with_dt_et_ratio(step=10, duration=100):
+        async for v in anim_with_dt_et_ratio(clock, step=10, duration=100):
             values.extend(v)
 
     task = start(async_fn())
@@ -148,10 +154,11 @@ def test_anim_with_dt_et_ratio(clock):
 
 def test_anim_with_dt_et_ratio_zero_duration(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import anim_with_dt_et_ratio
     values = []
 
     async def async_fn():
-        async for v in clock.anim_with_dt_et_ratio(step=10, duration=0):
+        async for v in anim_with_dt_et_ratio(clock, step=10, duration=0):
             values.extend(v)
 
     task = start(async_fn())

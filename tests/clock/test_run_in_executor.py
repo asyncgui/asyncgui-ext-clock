@@ -5,10 +5,11 @@ import threading
 
 def test_thread_id(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import run_in_executor
 
     async def job():
         before = threading.get_ident()
-        await clock.run_in_executor(executor, lambda: None, polling_interval=0)
+        await run_in_executor(clock, executor, lambda: None, polling_interval=0)
         after = threading.get_ident()
         assert before == after
 
@@ -20,10 +21,11 @@ def test_thread_id(clock):
 
 def test_propagate_exception(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import run_in_executor
 
     async def job():
         with pytest.raises(ZeroDivisionError):
-            await clock.run_in_executor(executor, lambda: 1 / 0, polling_interval=0)
+            await run_in_executor(clock, executor, lambda: 1 / 0, polling_interval=0)
 
     with ThreadPoolExecutor() as executor:
         task = start(job())
@@ -33,9 +35,10 @@ def test_propagate_exception(clock):
 
 def test_no_exception(clock):
     from asyncgui import start
+    from asyncgui_ext.clock import run_in_executor
 
     async def job():
-        assert 'A' == await clock.run_in_executor(executor, lambda: 'A', polling_interval=0)
+        assert 'A' == await run_in_executor(clock, executor, lambda: 'A', polling_interval=0)
 
     with ThreadPoolExecutor() as executor:
         task = start(job())
@@ -46,11 +49,12 @@ def test_no_exception(clock):
 def test_cancel_before_getting_excuted(clock):
     import time
     from asyncgui import Event, start
+    from asyncgui_ext.clock import run_in_executor
 
     flag = Event()
 
     async def job():
-        await clock.run_in_executor(executor, flag.set, polling_interval=0)
+        await run_in_executor(clock, executor, flag.set, polling_interval=0)
 
     with ThreadPoolExecutor(max_workers=1) as executor:
         executor.submit(time.sleep, .1)
