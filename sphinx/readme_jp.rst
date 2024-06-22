@@ -3,12 +3,9 @@ ReadMe |ja|
 ===========
 
 このモジュールは :mod:`asyncgui` を用いるプログラム向けのタイマー機能を提供します。
-機能は大別すると :class:`Clock` とその他になり、それぞれ以下の特徴を持ちます。
+機能は大別するとコールバック型とasync/await型に分けられ、状況に応じて好きな方を使えます。
 
-* ``Clock`` ... コールバック型のAPIで ``asyncgui`` の用いないプログラムからも利用できる。
-* その他 ... async/await型のAPIで ``asyncgui`` を用いるプログラムからのみ利用できる。
-
-まずはコールバック型のAPIのみを用いた以下のコードを見てください。
+まずはコールバック型のAPIを用いた以下のコードを見てください。
 
 .. code-block::
 
@@ -33,12 +30,12 @@ APIに渡す時間の単位は統一さえされていれば何でも構いま�
 .. code-block::
 
     import asyncgui
-    from asyncgui_ext.clock import Clock, sleep
+    from asyncgui_ext.clock import Clock
 
     clock = Clock()
 
     async def async_fn():
-        await sleep(clock, 20)
+        await clock.sleep(20)
         print("Hello")
 
     asyncgui.start(async_fn())
@@ -62,7 +59,7 @@ APIに渡す時間の単位は統一さえされていれば何でも構いま�
         dt = clock.tick(fps)
         vclock.tick(dt)
 
-``Kivy`` を使っているなら以下のようになると思います。
+``Kivy`` を使っているなら以下のようになるでしょう。
 
 .. code-block::
 
