@@ -25,12 +25,12 @@ Next one is async/await-style code that involves `asyncgui`, and does the same t
 
 ```python
 import asyncgui
-from asyncgui_ext.clock import Clock, sleep
+from asyncgui_ext.clock import Clock
 
 clock = Clock()
 
 async def async_fn():
-    await sleep(clock, 20)
+    await clock.sleep(20)
     print("Hello")
 
 asyncgui.start(async_fn())
