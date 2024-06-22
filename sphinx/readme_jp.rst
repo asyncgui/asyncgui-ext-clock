@@ -88,4 +88,4 @@ APIに渡す時間の単位は統一さえされていれば何でも構いま�
 その他
 -----------------------
 
-* [YouTube](https://youtu.be/kPVzO8fF0yg) (Kivy上で使う例)
+* `YouTube <https://youtu.be/kPVzO8fF0yg>`__ (Kivy上で使う例)
