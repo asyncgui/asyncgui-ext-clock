@@ -68,8 +68,8 @@ Clock.schedule_interval(vclock.tick, 0)
 Pin the minor version.
 
 ```
-poetry add asyncgui-ext-clock@~0.2
-pip install "asyncgui-ext-clock>=0.2,<0.3"
+poetry add asyncgui-ext-clock@~0.3
+pip install "asyncgui-ext-clock>=0.3,<0.4"
 ```
 
 ## Tested on
