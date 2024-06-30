@@ -38,6 +38,12 @@ class ClockEvent:
     def cancel(self):
         self._cancelled = True
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *__):
+        self._cancelled = True
+
 
 class Clock:
     __slots__ = ('_cur_time', '_events', '_events_to_be_added', '__weakref__', )
@@ -91,6 +97,14 @@ class Clock:
 
             event = clock.schedule_once(func, 10)
             event.cancel()
+
+        You can use this ``event`` object as a context manager, and it will be automatically unscheduled when the
+        context manager exits.
+
+        .. code-block::
+
+            with clock.schedule_once(func, 10):
+                ...
         '''
         cur_time = self._cur_time
         event = ClockEvent(cur_time + delay, cur_time, func, None)
@@ -105,8 +119,8 @@ class Clock:
 
         .. code-block::
 
-            event = clock.schedule_once(func, 10)
-            event.cancel()
+            with clock.schedule_interval(func, 10):
+                ...
 
         The other one is to return ``False`` from the callback function.
 

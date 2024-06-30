@@ -144,3 +144,16 @@ def test_interval_schedule_from_a_callback(clock):
     assert dt_list == [10, 20, 20, ]
     clock.tick(30)
     assert dt_list == [10, 20, 20, 30, 30, 30, ]
+
+
+def test_interval_context_manager(clock):
+    dt_list = []
+    func = dt_list.append
+
+    with clock.schedule_interval(func, 10) as e:
+        clock.tick(10)
+        assert dt_list == [10, ]
+        clock.tick(10)
+        assert dt_list == [10, 10, ]
+    clock.tick(100)
+    assert dt_list == [10, 10, ]
