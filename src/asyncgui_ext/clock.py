@@ -11,7 +11,7 @@ from contextlib import AbstractAsyncContextManager
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor
 
-from asyncgui import AsyncEvent, Cancelled, Task, wait_any_cm, _sleep_forever, _current_task
+from asyncgui import AsyncEvent, Cancelled, Task, move_on_when, _sleep_forever, _current_task
 
 TimeUnit = TypeVar("TimeUnit")
 ClockCallback: TypeAlias = Callable[[TimeUnit], None]
@@ -162,7 +162,7 @@ class Clock:
             else:
                 print("The code block exited gracefully.")
         '''
-        return wait_any_cm(self.sleep(timeout))
+        return move_on_when(self.sleep(timeout))
 
     @types.coroutine
     def n_frames(self, n: int) -> Awaitable:
