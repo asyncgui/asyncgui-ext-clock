@@ -13,13 +13,13 @@ files = [
 
 [[package]]
 name = "asyncgui"
-version = "0.6.2"
+version = "0.6.3"
 description = "A thin layer that helps to wrap a callback-style API in an async/await-style API"
 optional = false
 python-versions = "<4.0.0,>=3.8.1"
 files = [
-    {file = "asyncgui-0.6.2-py3-none-any.whl", hash = "sha256:4fbd7d05ee84eb6175ca9723e6bd43c6f66707edc7ad77cb9a66e2b9a8085630"},
-    {file = "asyncgui-0.6.2.tar.gz", hash = "sha256:1f46a34f0d88c547034d3bc5e437d77351dc90c6a0ecdf1653023b62ca588463"},
+    {file = "asyncgui-0.6.3-py3-none-any.whl", hash = "sha256:46723e65d8bf023e28d141f6a9d38634ef5b97a5236fafdaf80b47e13275a5eb"},
+    {file = "asyncgui-0.6.3.tar.gz", hash = "sha256:05de49c2221128d3530f010df98491f3553183ec8909d205a0c0250bee5d6e0c"},
 ]
 
 [package.dependencies]
