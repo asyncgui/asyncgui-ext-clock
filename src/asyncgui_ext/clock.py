@@ -410,7 +410,7 @@ class Clock:
             finally:
                 done = True
 
-        Thread(target=wrapper, daemon=daemon).start()
+        Thread(target=wrapper, daemon=daemon, name="asyncgui_ext.clock.Clock.run_in_thread").start()
         async with _repeat_sleeping(self, polling_interval) as sleep:
             while not done:
                 await sleep()
