@@ -61,6 +61,10 @@ class Clock:
         '''
         Advances the clock time and triggers scheduled events accordingly.
         The ``delta_time`` must be 0 or greater.
+
+        .. warning::
+
+            Don't call this method recursively.
         '''
         self._cur_time += delta_time
         cur_time = self._cur_time
@@ -519,14 +523,14 @@ class Clock:
             import types
 
             obj = types.SimpleNamespace(x=0, size=(200, 300))
-            await clock.anim_attrs(obj, x=100, size=(400, 400))
+            await clock.anim_attrs(obj, x=100, size=(400, 400), duration=2)
 
         The ``output_seq_type`` parameter.
 
         .. code-block::
 
             obj = types.SimpleNamespace(size=(200, 300))
-            await clock.anim_attrs(obj, size=(400, 400), output_seq_type=list)
+            await clock.anim_attrs(obj, size=(400, 400), duration=2, output_seq_type=list)
             assert type(obj.size) is list
         '''
         return self._anim_attrs(obj, duration, step, transition, output_seq_type, animated_properties)

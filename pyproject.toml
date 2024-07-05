@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "asyncgui-ext-clock"
 version = "0.3.2.dev0"
-description = ""
+description = "An event scheduler for asyncgui programs"
 authors = ["Nattōsai Mitō <flow4re2c@gmail.com>"]
 license = "MIT"
 readme = 'README.md'
