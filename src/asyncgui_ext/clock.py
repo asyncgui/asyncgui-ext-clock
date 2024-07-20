@@ -81,7 +81,8 @@ class Clock:
             if e._deadline > cur_time:
                 tba_append(e)
                 continue
-            if e.callback(cur_time - e._last_tick) is False or e._interval is None:
+            e.callback(cur_time - e._last_tick)
+            if e._interval is None:
                 continue
             e._deadline += e._interval
             e._last_tick = cur_time
@@ -118,21 +119,6 @@ class Clock:
     def schedule_interval(self, func, interval) -> ClockEvent:
         '''
         Schedules the ``func`` to be called repeatedly at a specified interval.
-
-        There are two ways to unschedule the event. One is the same as :meth:`schedule_once`.
-
-        .. code-block::
-
-            with clock.schedule_interval(func, 10):
-                ...
-
-        The other one is to return ``False`` from the callback function.
-
-        .. code-block::
-
-            def func(dt):
-                if some_condition:
-                    return False
         '''
         cur_time = self._cur_time
         event = ClockEvent(cur_time + interval, cur_time, func, interval)
@@ -195,7 +181,6 @@ class Clock:
             n -= 1
             if not n:
                 task._step()
-                return False
 
         event = self.schedule_interval(callback, 0)
 
@@ -222,9 +207,9 @@ class Clock:
             def callback(dt):
                 print(dt)
                 if some_condition:
-                    return False
+                    event.cancel()
 
-            clock.schedule_interval(callback, 10)
+            event = clock.schedule_interval(callback, 10)
 
         **Restriction**
 
@@ -479,7 +464,6 @@ class Clock:
         # time to stop ?
         if progress >= 1.:
             task._step()
-            return False
 
     _update = partial(_update, setattr, zip, min)
 
