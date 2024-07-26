@@ -3,27 +3,6 @@ ReadMe |ja|
 ===========
 
 このモジュールは :mod:`asyncgui` を用いるプログラム向けのタイマー機能を提供します。
-機能は大別するとコールバック型とasync/await型に分けられ、状況に応じて好きな方を使えます。
-まずはコールバック型のAPIを用いた以下のコードを見てください。
-
-.. code-block::
-
-    from asyncgui_ext.clock import Clock
-
-    clock = Clock()
-
-    # 20経過後に関数が呼ばれるようにする。
-    clock.schedule_once(lambda dt: print("Hello"), 20)
-
-    # 時計を10進める。
-    clock.tick(10)
-
-    # 合計で20進むので関数が呼ばれる。
-    clock.tick(10)  # => Hello
-
-:mod:`sched` と同じで時間の単位が決まってない事に気付いたと思います。
-APIに渡す時間の単位は統一さえされていれば何でも構いません。
-次は同じ事をするasync/await型のコードを見てください。
 
 .. code-block::
 
@@ -33,29 +12,32 @@ APIに渡す時間の単位は統一さえされていれば何でも構いま�
     clock = Clock()
 
     async def async_fn():
-        await clock.sleep(20)
+        await clock.sleep(20)  # 時間が20経過するのを待つ。
         print("Hello")
 
     asyncgui.start(async_fn())
-    clock.tick(10)
-    clock.tick(10)  # => Hello
+    clock.tick(10)  # 時間が10進む。
+    clock.tick(10)  # 合計で20進むのでタスクが再開し 'Hello' が表示される。
 
-この様に ``clock.tick()`` を呼ぶ事で時計内部の時が進み、関数が呼ばれたり停止中のタスクが再開するわけです。
-ただこれらの例はこのモジュールの仕組みを示してはいますが実用的な使い方ではありません。
-実際のプログラムでは ``clock.tick()`` をループ内で呼んだり別のタイマーを用いて定期的に呼ぶ事になると思います。
+この様に ``clock.tick()`` を呼ぶ事で時計内部の時が進み停止中のタスクが再開するわけです。
+また :mod:`sched` と同じで時間の単位が決まってない事に気付いたと思います。
+APIに渡す時間の単位は統一さえされていれば何でも構いません。
+
+ただ上記の例はこのモジュールの仕組みを示しているだけであり実用的な使い方ではありません。
+実際のプログラムでは ``clock.tick()`` をメインループ内で呼んだり別のタイマーを用いて定期的に呼ぶ事になると思います。
 例えば ``PyGame`` を使っているなら以下のように、
 
 .. code-block::
 
-    clock = pygame.time.Clock()
-    vclock = asyncgui_ext.clock.Clock()
+    pygame_clock = pygame.time.Clock()
+    clock = asyncgui_ext.clock.Clock()
 
     # メインループ
     while running:
         ...
 
-        dt = clock.tick(fps)
-        vclock.tick(dt)
+        dt = pygame_clock.tick(fps)
+        clock.tick(dt)
 
 ``Kivy`` を使っているなら以下のようになるでしょう。
 
@@ -63,8 +45,8 @@ APIに渡す時間の単位は統一さえされていれば何でも構いま�
 
     from kivy.clock import Clock
 
-    vclock = asyncui_ext.clock.Clock()
-    Clock.schedule_interval(vclock.tick, 0)
+    clock = asyncui_ext.clock.Clock()
+    Clock.schedule_interval(clock.tick, 0)
 
 インストール方法
 -----------------------
