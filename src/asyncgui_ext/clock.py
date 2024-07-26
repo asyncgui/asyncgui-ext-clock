@@ -11,7 +11,7 @@ from contextlib import AbstractAsyncContextManager
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor
 
-from asyncgui import AsyncEvent, Cancelled, Task, move_on_when, _sleep_forever, _current_task
+from asyncgui import Cancelled, Task, move_on_when, _sleep_forever, _current_task
 
 TimeUnit = TypeVar("TimeUnit")
 ClockCallback: TypeAlias = Callable[[TimeUnit], None]
@@ -82,8 +82,6 @@ class Clock:
                 tba_append(e)
                 continue
             e.callback(cur_time - e._last_tick)
-            if e._interval is None:
-                continue
             e._deadline += e._interval
             e._last_tick = cur_time
             tba_append(e)
@@ -91,30 +89,6 @@ class Clock:
         # swap
         self._events = events_tba
         self._events_to_be_added = events
-
-    def schedule_once(self, func, delay) -> ClockEvent:
-        '''
-        Schedules the ``func`` to be called after the ``delay``.
-
-        To unschedule:
-
-        .. code-block::
-
-            event = clock.schedule_once(func, 10)
-            event.cancel()
-
-        You can use this ``event`` object as a context manager, and it will be automatically unscheduled when the
-        context manager exits.
-
-        .. code-block::
-
-            with clock.schedule_once(func, 10):
-                ...
-        '''
-        cur_time = self._cur_time
-        event = ClockEvent(cur_time + delay, cur_time, func, None)
-        self._events_to_be_added.append(event)
-        return event
 
     def schedule_interval(self, func, interval) -> ClockEvent:
         '''
@@ -125,6 +99,7 @@ class Clock:
         self._events_to_be_added.append(event)
         return event
 
+    @types.coroutine
     def sleep(self, duration) -> Awaitable:
         '''
         Waits for a specified period of time.
@@ -133,9 +108,12 @@ class Clock:
 
             await clock.sleep(10)
         '''
-        ev = AsyncEvent()
-        self.schedule_once(ev.fire, duration)
-        return ev.wait()
+        task = (yield _current_task)[0][0]
+        event = self.schedule_interval(task._step, duration)
+        try:
+            yield _sleep_forever
+        finally:
+            event.cancel()
 
     def move_on_after(self, timeout) -> AbstractAsyncContextManager[Task]:
         '''
