@@ -210,16 +210,19 @@ class Clock:
 
     async def anim_with_et(self, *, step=0) -> AsyncIterator[TimeUnit]:
         '''
-        Same as :meth:`anim_with_dt` except this one generates the total elapsed time of the loop instead of the elapsed
-        time between frames.
+        .. code-block::
+
+            async for et in clock.anim_with_et():
+                print(et)
+
+        The code above is equivalent to the below.
 
         .. code-block::
 
-            timeout = ...
-            async for et in clock.anim_with_et():
-                ...
-                if et > timeout:
-                    break
+            et = 0
+            async for dt in clock.anim_with_dt():
+                et += dt
+                print(et)
         '''
         et = 0
         async with _repeat_sleeping(self, step) as sleep:
@@ -243,14 +246,20 @@ class Clock:
                 et += dt
                 yield dt, et
 
-    async def anim_with_ratio(self, *, duration, step=0) -> AsyncIterator[float]:
+    async def anim_with_ratio(self, *, base, step=0) -> AsyncIterator[float]:
         '''
-        Same as :meth:`anim_with_et` except this one generates the total progression ratio of the loop.
+        .. code-block::
+
+            async for p in clock.anim_with_ratio(base=100):
+                print(p * 100, "%")
+
+        The code above is equivalent to the below.
 
         .. code-block::
 
-            async for p in self.anim_with_ratio(duration=...):
-                print(p * 100, "%")
+            base = 100
+            async for et in clock.anim_with_et():
+                print(et / base * 100, "%")
 
         If you want to progress at a non-consistant rate, you may find the
         `source code <https://github.com/kivy/kivy/blob/master/kivy/animation.py>`__
@@ -258,21 +267,22 @@ class Clock:
 
         .. code-block::
 
-            async for p in clock.anim_with_ratio(duration=...):
+            async for p in clock.anim_with_ratio(base=...):
                 p = p * p  # quadratic
                 print(p * 100, "%")
+
+        .. versionchanged:: 0.5.0
+
+            The ``duration`` parameter was replaced with the ``base`` parameter.
+            The loop no longer stops when the progression reaches 1.0.
         '''
-        if not duration:
-            await self.sleep(step)
-            yield 1.0
-            return
         et = 0
         async with _repeat_sleeping(self, step) as sleep:
-            while et < duration:
+            while True:
                 et += await sleep()
-                yield et / duration
+                yield et / base
 
-    async def anim_with_dt_et_ratio(self, *, duration, step=0) -> AsyncIterator[tuple[TimeUnit, TimeUnit, float]]:
+    async def anim_with_dt_et_ratio(self, *, base, step=0) -> AsyncIterator[tuple[TimeUnit, TimeUnit, float]]:
         '''
         :meth:`anim_with_dt`, :meth:`anim_with_et` and :meth:`anim_with_ratio` combined.
 
@@ -280,17 +290,18 @@ class Clock:
 
             async for dt, et, p in clock.anim_with_dt_et_ratio(...):
                 ...
+
+        .. versionchanged:: 0.5.0
+
+            The ``duration`` parameter was replaced with the ``base`` parameter.
+            The loop no longer stops when the progression reaches 1.0.
         '''
         async with _repeat_sleeping(self, step) as sleep:
-            if not duration:
-                dt = await sleep()
-                yield dt, dt, 1.0
-                return
             et = 0.
-            while et < duration:
+            while True:
                 dt = await sleep()
                 et += dt
-                yield dt, et, et / duration
+                yield dt, et, et / base
 
     def _linear(p):
         return p
@@ -316,10 +327,13 @@ class Clock:
         '''
         slope = end - start
         yield transition(0.) * slope + start
-        async for p in self.anim_with_ratio(step=step, duration=duration):
-            if p >= 1.0:
-                break
-            yield transition(p) * slope + start
+        if duration:
+            async for p in self.anim_with_ratio(step=step, base=duration):
+                if p >= 1.0:
+                    break
+                yield transition(p) * slope + start
+        else:
+            await self.sleep(0)
         yield transition(1.) * slope + start
 
     async def interpolate_sequence(self, start, end, *, duration, step=0, transition=_linear, output_type=tuple) -> AsyncIterator:
@@ -347,11 +361,14 @@ class Clock:
         p = transition(0.)
         yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
 
-        async for p in self.anim_with_ratio(step=step, duration=duration):
-            if p >= 1.0:
-                break
-            p = transition(p)
-            yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+        if duration:
+            async for p in self.anim_with_ratio(step=step, base=duration):
+                if p >= 1.0:
+                    break
+                p = transition(p)
+                yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+        else:
+            await self.sleep(0)
 
         p = transition(1.)
         yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
