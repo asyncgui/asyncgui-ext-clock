@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_anim_with_dt(clock):
     from asyncgui import start
     dt_list = []
@@ -50,8 +53,10 @@ def test_anim_with_ratio(clock):
     p_list = []
 
     async def async_fn():
-        async for p in clock.anim_with_ratio(step=10, duration=100):
+        async for p in clock.anim_with_ratio(step=10, base=100):
             p_list.append(p)
+            if p >= 1:
+                break
 
     task = start(async_fn())
     assert p_list == []
@@ -70,21 +75,22 @@ def test_anim_with_ratio(clock):
     assert task.finished
 
 
-def test_anim_with_ratio_zero_duration(clock):
+def test_anim_with_ratio_zero_base(clock):
     from asyncgui import start
     p_list = []
 
     async def async_fn():
-        async for p in clock.anim_with_ratio(step=10, duration=0):
+        async for p in clock.anim_with_ratio(step=10, base=0):
             p_list.append(p)
 
     task = start(async_fn())
     assert p_list == []
     clock.tick(6)
     assert p_list == []
-    clock.tick(6)
-    assert p_list == [1.0, ]
-    assert task.finished
+    with pytest.raises(ZeroDivisionError):
+        clock.tick(6)
+    assert p_list == []
+    assert task.cancelled
 
 
 def test_anim_with_dt_et(clock):
@@ -117,8 +123,10 @@ def test_anim_with_dt_et_ratio(clock):
     values = []
 
     async def async_fn():
-        async for v in clock.anim_with_dt_et_ratio(step=10, duration=100):
+        async for v in clock.anim_with_dt_et_ratio(step=10, base=100):
             values.extend(v)
+            if values[2] >= 1:
+                break
 
     task = start(async_fn())
     assert values == []
@@ -146,18 +154,19 @@ def test_anim_with_dt_et_ratio(clock):
     assert task.finished
 
 
-def test_anim_with_dt_et_ratio_zero_duration(clock):
+def test_anim_with_dt_et_ratio_zero_base(clock):
     from asyncgui import start
     values = []
 
     async def async_fn():
-        async for v in clock.anim_with_dt_et_ratio(step=10, duration=0):
+        async for v in clock.anim_with_dt_et_ratio(step=10, base=0):
             values.extend(v)
 
     task = start(async_fn())
     assert values == []
     clock.tick(6)
     assert values == []
-    clock.tick(6)
-    assert values == [12, 12, 1.0]
-    assert task.finished
+    with pytest.raises(ZeroDivisionError):
+        clock.tick(6)
+    assert values == []
+    assert task.cancelled
