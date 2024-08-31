@@ -374,6 +374,9 @@ class Clock:
         yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
 
     interpolate_seq = interpolate_sequence
+    '''
+    An alias for :meth:`interpolate_sequence`.
+    '''
 
     async def run_in_thread(self, func, *, daemon=None, polling_interval) -> Awaitable:
         '''
