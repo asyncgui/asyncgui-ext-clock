@@ -55,8 +55,8 @@ APIに渡す時間の単位は統一さえされていれば何でも構いま�
 
 ::
 
-    poetry add asyncgui-ext-clock@~0.4
-    pip install "asyncgui-ext-clock>=0.4,<0.5"
+    poetry add asyncgui-ext-clock@~0.5
+    pip install "asyncgui-ext-clock>=0.5,<0.6"
 
 テスト環境
 -----------------------
