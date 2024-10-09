@@ -336,6 +336,13 @@ class Clock:
             await self.sleep(0)
         yield transition(1.) * slope + start
 
+    interpolate = interpolate_scalar
+    '''
+    An alias for :meth:`interpolate_scalar`.
+
+    .. versionadded:: 0.5.2
+    '''
+
     async def interpolate_sequence(self, start, end, *, duration, step=0, transition=_linear, output_type=tuple) -> AsyncIterator:
         '''
         Same as :meth:`interpolate_scalar` except this one is for sequence type.
