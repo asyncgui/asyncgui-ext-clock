@@ -59,6 +59,10 @@ pip install "asyncgui-ext-clock>=0.5,<0.6"
 - CPython 3.13
 - PyPy 3.10
 
+## Purity
+
+This module does not rely on system calls at all.
+
 ## Misc
 
 - [YouTube Demo](https://youtu.be/kPVzO8fF0yg) (with Kivy)
