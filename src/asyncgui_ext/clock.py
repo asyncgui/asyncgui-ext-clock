@@ -8,10 +8,8 @@ from collections.abc import Callable, Awaitable, AsyncIterator
 from functools import partial
 from dataclasses import dataclass
 from contextlib import AbstractAsyncContextManager
-from threading import Thread
-from concurrent.futures import ThreadPoolExecutor
 
-from asyncgui import Cancelled, Task, move_on_when, _sleep_forever, _current_task
+from asyncgui import Task, move_on_when, _sleep_forever, _current_task
 
 TimeUnit = TypeVar("TimeUnit")
 ClockCallback: TypeAlias = Callable[[TimeUnit], None]
@@ -384,70 +382,6 @@ class Clock:
     '''
     An alias for :meth:`interpolate_sequence`.
     '''
-
-    async def run_in_thread(self, func, *, daemon=None, polling_interval) -> Awaitable:
-        '''
-        Creates a new thread, runs a function within it, then waits for the completion of that function.
-
-        .. code-block::
-
-            return_value = await clock.run_in_thread(func, polling_interval=...)
-        '''
-        return_value = None
-        exception = None
-        done = False
-
-        def wrapper():
-            nonlocal return_value, done, exception
-            try:
-                return_value = func()
-            except Exception as e:
-                exception = e
-            finally:
-                done = True
-
-        Thread(target=wrapper, daemon=daemon, name="asyncgui_ext.clock.Clock.run_in_thread").start()
-        async with _repeat_sleeping(self, polling_interval) as sleep:
-            while not done:
-                await sleep()
-        if exception is not None:
-            raise exception
-        return return_value
-
-    async def run_in_executor(self, executer: ThreadPoolExecutor, func, *, polling_interval) -> Awaitable:
-        '''
-        Runs a function within a :class:`concurrent.futures.ThreadPoolExecutor`, and waits for the completion of the
-        function.
-
-        .. code-block::
-
-            executor = ThreadPoolExecutor()
-            return_value = await clock.run_in_executor(executor, func, polling_interval=...)
-        '''
-        return_value = None
-        exception = None
-        done = False
-
-        def wrapper():
-            nonlocal return_value, done, exception
-            try:
-                return_value = func()
-            except Exception as e:
-                exception = e
-            finally:
-                done = True
-
-        future = executer.submit(wrapper)
-        try:
-            async with _repeat_sleeping(self, polling_interval) as sleep:
-                while not done:
-                    await sleep()
-        except Cancelled:
-            future.cancel()
-            raise
-        if exception is not None:
-            raise exception
-        return return_value
 
     def _update(setattr, zip, min, obj, duration, transition, output_seq_type, anim_params, task, p_time, dt):
         time = p_time[0] + dt
