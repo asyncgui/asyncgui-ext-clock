@@ -1,6 +1,6 @@
 # Clock
 
-*Event scheduler designed for asyncgui programs.*
+Provides async time-related functionality.
 
 ```python
 import asyncgui
@@ -14,11 +14,11 @@ async def async_fn():
 
 asyncgui.start(async_fn())
 clock.tick(10)  # Advances the clock by 10 time units.
-clock.tick(10)  # Total of 20 time units. The task above will wake up, and prints 'Hello'.
+clock.tick(10)  # Total of 20 time units. The async_fn will wake up, and prints 'Hello'.
 ```
 
 The example above effectively illustrate how this module works but it's not practical.
-In a real-world program, you probably want to call ``clock.tick()`` in a loop or schedule it to be called repeatedly using another scheduling API.
+In a real-world program, you probably want to call ``clock.tick()`` in a main loop.
 For example, if you are using `PyGame`, you may want to do:
 
 ```python
@@ -31,15 +31,6 @@ while running:
 
     dt = pygame_clock.tick(fps)
     clock.tick(dt)
-```
-
-And if you are using `Kivy`, you may want to do:
-
-```python
-from kivy.clock import Clock
-
-clock = asyncui_ext.clock.Clock()
-Clock.schedule_interval(clock.tick, 0)
 ```
 
 ## Installation
@@ -58,7 +49,3 @@ pip install "asyncgui-ext-clock>=0.5,<0.6"
 - CPython 3.12
 - CPython 3.13
 - PyPy 3.10
-
-## Misc
-
-- [YouTube Demo](https://youtu.be/kPVzO8fF0yg) (with Kivy)

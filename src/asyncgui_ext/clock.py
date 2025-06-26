@@ -336,7 +336,7 @@ class Clock:
 
     interpolate = interpolate_scalar
     '''
-    An alias for :meth:`interpolate_scalar`.
+    An alias of :meth:`interpolate_scalar`.
 
     .. versionadded:: 0.5.2
     '''
@@ -380,7 +380,7 @@ class Clock:
 
     interpolate_seq = interpolate_sequence
     '''
-    An alias for :meth:`interpolate_sequence`.
+    An alias of :meth:`interpolate_sequence`.
     '''
 
     def _update(setattr, zip, min, obj, duration, transition, anim_params, task, p_time, dt):
@@ -440,7 +440,7 @@ class Clock:
 
     def anim_attrs(self, obj, *, duration, step=0, transition=_linear, **animated_properties) -> Awaitable:
         '''
-        Animates attibutes of any object.
+        Animates attributes of any object.
 
         .. code-block::
 
@@ -448,6 +448,16 @@ class Clock:
 
             obj = types.SimpleNamespace(x=0, size=(200, 300))
             await clock.anim_attrs(obj, x=100, size=(400, 400), duration=2)
+
+        Only numbers and flat numeric sequences are supported.
+        Nested sequences and dictionaries are not supported.
+
+        .. code-block::
+
+            await anim_attrs(obj, dictionary={'x': 1.})  # not supported
+            await anim_attrs(obj, nested_sequence=[[10, 20, ]])  # not supported
+
+            await anim_attrs(obj, number=1, flat_sequence=(100, 200))  # OK
         '''
         return self._anim_attrs(obj, duration, step, transition, animated_properties)
 
