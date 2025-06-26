@@ -45,22 +45,22 @@ def test_no_exception(clock):
 
 def test_cancel_before_getting_excuted(clock):
     import time
-    from asyncgui import Box, start
+    from asyncgui import StatefulEvent, start
 
-    box = Box()
+    e = StatefulEvent()
 
     async def job():
-        await clock.run_in_executor(executor, box.put, polling_interval=0)
+        await clock.run_in_executor(executor, e.fire, polling_interval=0)
 
     with ThreadPoolExecutor(max_workers=1) as executor:
         executor.submit(time.sleep, .1)
         task = start(job())
         time.sleep(.02)
         assert not task.finished
-        assert box.is_empty
+        assert not e.is_fired
         clock.tick(0)
         task.cancel()
         assert task.cancelled
-        assert box.is_empty
+        assert not e.is_fired
         time.sleep(.2)
-        assert box.is_empty
+        assert not e.is_fired
