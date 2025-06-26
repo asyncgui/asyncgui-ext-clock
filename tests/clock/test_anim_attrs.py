@@ -38,17 +38,3 @@ def test_sequence(clock):
     clock.tick(30)
     assert obj.pos == approx([100, 0])
     assert task.finished
-
-
-@pytest.mark.parametrize('output_seq_type', [list, tuple])
-def test_seq_type_parameter(clock, output_seq_type):
-    from types import SimpleNamespace
-    import asyncgui
-
-    obj = SimpleNamespace(size=(0, 0), pos=[0, 0])
-    task = asyncgui.start(clock.anim_attrs(obj, size=[10, 10], pos=(10, 10), duration=10, output_seq_type=output_seq_type))
-    clock.tick(0)
-    assert type(obj.size) is output_seq_type
-    assert type(obj.pos) is output_seq_type
-    assert not task.finished
-    task.cancel()

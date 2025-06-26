@@ -341,9 +341,9 @@ class Clock:
     .. versionadded:: 0.5.2
     '''
 
-    async def interpolate_sequence(self, start, end, *, duration, step=0, transition=_linear, output_type=tuple) -> AsyncIterator:
+    async def interpolate_sequence(self, start, end, *, duration, step=0, transition=_linear) -> AsyncIterator:
         '''
-        Same as :meth:`interpolate_scalar` except this one is for sequence type.
+        Same as :meth:`interpolate_scalar` except this one is for sequence types.
 
         .. code-block::
 
@@ -353,37 +353,37 @@ class Clock:
         ============ ==========
         elapsed time output
         ============ ==========
-        0            (0, 50)
-        30           (30, 65)
-        60           (60, 80)
-        90           (90, 95)
-        **120**      (100, 100)
+        0            [0, 50]
+        30           [30, 65]
+        60           [60, 80]
+        90           [90, 95]
+        **120**      [100, 100]
         ============ ==========
         '''
         zip_ = zip
-        slope = tuple(end_elem - start_elem for end_elem, start_elem in zip_(end, start))
+        slope = [end_elem - start_elem for end_elem, start_elem in zip_(end, start)]
 
         p = transition(0.)
-        yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+        yield [p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
         if duration:
             async for p in self.anim_with_ratio(step=step, base=duration):
                 if p >= 1.0:
                     break
                 p = transition(p)
-                yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+                yield [p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
         else:
             await self.sleep(0)
 
         p = transition(1.)
-        yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+        yield [p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
     interpolate_seq = interpolate_sequence
     '''
     An alias for :meth:`interpolate_sequence`.
     '''
 
-    def _update(setattr, zip, min, obj, duration, transition, output_seq_type, anim_params, task, p_time, dt):
+    def _update(setattr, zip, min, obj, duration, transition, anim_params, task, p_time, dt):
         time = p_time[0] + dt
         p_time[0] = time
 
@@ -394,10 +394,10 @@ class Clock:
         # apply progression on obj
         for attr_name, org_value, slope, is_seq in anim_params:
             if is_seq:
-                new_value = output_seq_type(
+                new_value = [
                     slope_elem * t + org_elem
                     for org_elem, slope_elem in zip(org_value, slope)
-                )
+                ]
                 setattr(obj, attr_name, new_value)
             else:
                 setattr(obj, attr_name, slope * t + org_value)
@@ -410,26 +410,26 @@ class Clock:
 
     @types.coroutine
     def _anim_attrs(
-            self, obj, duration, step, transition, output_seq_type, animated_properties,
+            self, obj, duration, step, transition, animated_properties,
             getattr=getattr, isinstance=isinstance, tuple=tuple, partial=partial, native_seq_types=(tuple, list),
             zip=zip, _update=_update,
             _current_task=_current_task, _sleep_forever=_sleep_forever, /):
         # get current values & calculate slopes
-        anim_params = tuple(
+        anim_params = [
             (
                 org_value := getattr(obj, attr_name),
                 is_seq := isinstance(org_value, native_seq_types),
                 (
                     org_value := tuple(org_value),
-                    slope := tuple(goal_elem - org_elem for goal_elem, org_elem in zip(goal_value, org_value)),
+                    slope := [goal_elem - org_elem for goal_elem, org_elem in zip(goal_value, org_value)],
                 ) if is_seq else (slope := goal_value - org_value),
             ) and (attr_name, org_value, slope, is_seq, )
             for attr_name, goal_value in animated_properties.items()
-        )
+        ]
 
         try:
             event = self.schedule_interval(
-                partial(_update, obj, duration, transition, output_seq_type, anim_params, (yield _current_task)[0][0], [0, ]),
+                partial(_update, obj, duration, transition, anim_params, (yield _current_task)[0][0], [0, ]),
                 step,
             )
             yield _sleep_forever
@@ -438,8 +438,7 @@ class Clock:
 
     del _update
 
-    def anim_attrs(self, obj, *, duration, step=0, transition=_linear, output_seq_type=tuple,
-                   **animated_properties) -> Awaitable:
+    def anim_attrs(self, obj, *, duration, step=0, transition=_linear, **animated_properties) -> Awaitable:
         '''
         Animates attibutes of any object.
 
@@ -449,22 +448,14 @@ class Clock:
 
             obj = types.SimpleNamespace(x=0, size=(200, 300))
             await clock.anim_attrs(obj, x=100, size=(400, 400), duration=2)
-
-        The ``output_seq_type`` parameter.
-
-        .. code-block::
-
-            obj = types.SimpleNamespace(size=(200, 300))
-            await clock.anim_attrs(obj, size=(400, 400), duration=2, output_seq_type=list)
-            assert type(obj.size) is list
         '''
-        return self._anim_attrs(obj, duration, step, transition, output_seq_type, animated_properties)
+        return self._anim_attrs(obj, duration, step, transition, animated_properties)
 
-    def anim_attrs_abbr(self, obj, *, d, s=0, t=_linear, output_seq_type=tuple, **animated_properties) -> Awaitable:
+    def anim_attrs_abbr(self, obj, *, d, s=0, t=_linear, **animated_properties) -> Awaitable:
         '''
         :meth:`anim_attrs` cannot animate attributes named ``step``, ``duration`` and ``transition`` but this one can.
         '''
-        return self._anim_attrs(obj, d, s, t, output_seq_type, animated_properties)
+        return self._anim_attrs(obj, d, s, t, animated_properties)
 
 
 class _repeat_sleeping:
