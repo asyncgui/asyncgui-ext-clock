@@ -7,9 +7,9 @@ from typing import TypeAlias, TypeVar
 from collections.abc import Callable, Awaitable, AsyncIterator
 from functools import partial
 from dataclasses import dataclass
-from contextlib import AbstractAsyncContextManager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 
-from asyncgui import Task, move_on_when, _sleep_forever, _current_task
+from asyncgui import Task, move_on_when, _sleep_forever, _current_task, ExclusiveEvent, _wait_args_0, current_task
 
 TimeUnit = TypeVar("TimeUnit")
 ClockCallback: TypeAlias = Callable[[TimeUnit], None]
@@ -165,6 +165,52 @@ class Clock:
         finally:
             event.cancel()
 
+    @asynccontextmanager
+    async def sleep_freq(self, duration, *, free_to_await=False) -> AsyncIterator[Callable[[], Awaitable[TimeUnit]]]:
+        '''
+        An async form of :meth:`schedule_interval`. The following callback-style code:
+
+        .. code-block::
+
+            def callback(dt):
+                print(dt)
+                if some_condition:
+                    event.cancel()
+
+            event = clock.schedule_interval(callback, 10)
+
+        is equivalent to the following async-style code:
+
+        .. code-block::
+
+            async with clock.sleep_freq(10) as sleep:
+                while True:
+                    dt = await sleep()
+                    print(dt)
+                    if some_condition:
+                        break
+
+        .. versionadded:: 0.6.1
+
+        The ``free_to_await`` parameter:
+
+        If set to False (the default), the only permitted async operation within the with-block is ``await xxx()``,
+        where ``xxx`` is the identifier specified in the as-clause. To lift this restriction, set ``free_to_await`` to
+        True — at the cost of slightly reduced performance.
+        '''
+        clock_event = self.schedule_interval(None, duration)
+        try:
+            if free_to_await:
+                e = ExclusiveEvent()
+                clock_event.callback = e.fire
+                yield e.wait_args_0
+            else:
+                task = await current_task()
+                clock_event.callback = task._step
+                yield _wait_args_0
+        finally:
+            clock_event.cancel()
+
     async def anim_with_dt(self, *, step=0) -> AsyncIterator[TimeUnit]:
         '''
         An async form of :meth:`schedule_interval`.
@@ -202,7 +248,7 @@ class Clock:
 
         This is also true of other ``anim_with_xxx`` APIs.
         '''
-        async with _repeat_sleeping(self, step) as sleep:
+        async with self.sleep_freq(step) as sleep:
             while True:
                 yield await sleep()
 
@@ -223,7 +269,7 @@ class Clock:
                 print(et)
         '''
         et = 0
-        async with _repeat_sleeping(self, step) as sleep:
+        async with self.sleep_freq(step) as sleep:
             while True:
                 et += await sleep()
                 yield et
@@ -238,7 +284,7 @@ class Clock:
                 ...
         '''
         et = 0
-        async with _repeat_sleeping(self, step) as sleep:
+        async with self.sleep_freq(step) as sleep:
             while True:
                 dt = await sleep()
                 et += dt
@@ -275,7 +321,7 @@ class Clock:
             The loop no longer stops when the progression reaches 1.0.
         '''
         et = 0
-        async with _repeat_sleeping(self, step) as sleep:
+        async with self.sleep_freq(step) as sleep:
             while True:
                 et += await sleep()
                 yield et / base
@@ -294,7 +340,7 @@ class Clock:
             The ``duration`` parameter was replaced with the ``base`` parameter.
             The loop no longer stops when the progression reaches 1.0.
         '''
-        async with _repeat_sleeping(self, step) as sleep:
+        async with self.sleep_freq(step) as sleep:
             et = 0.
             while True:
                 dt = await sleep()
@@ -466,25 +512,3 @@ class Clock:
         :meth:`anim_attrs` cannot animate attributes named ``step``, ``duration`` and ``transition`` but this one can.
         '''
         return self._anim_attrs(obj, d, s, t, animated_properties)
-
-
-class _repeat_sleeping:
-    __slots__ = ('_timer', '_interval', '_event', )
-
-    def __init__(self, clock: Clock, interval):
-        self._timer = clock
-        self._interval = interval
-
-    @staticmethod
-    @types.coroutine
-    def _sleep(_f=_sleep_forever):
-        return (yield _f)[0][0]
-
-    @types.coroutine
-    def __aenter__(self, _current_task=_current_task) -> Awaitable[Callable[[], Awaitable[TimeUnit]]]:
-        task = (yield _current_task)[0][0]
-        self._event = self._timer.schedule_interval(task._step, self._interval)
-        return self._sleep
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self._event.cancel()
