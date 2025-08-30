@@ -14,9 +14,9 @@ def test_sleep(clock):
 
     task = start(async_fn())
     assert task_state == 'A'
-    clock.tick(10)
+    clock.advance(10)
     assert task_state == 'B'
-    clock.tick(10)
+    clock.advance(10)
     assert task_state == 'C'
     assert task.finished
 
@@ -37,9 +37,9 @@ def test_move_on_after(clock):
 
     task = start(async_fn())
     assert task_state == 'A'
-    clock.tick(10)
+    clock.advance(10)
     assert task_state == 'B'
-    clock.tick(10)
+    clock.advance(10)
     assert task_state == 'B'
     assert task.finished
 
@@ -56,5 +56,5 @@ def test_n_frames(clock, n):
     task = start(clock.n_frames(n))
     for __ in range(n):
         assert not task.finished
-        clock.tick(0)
+        clock.advance(0)
     assert task.finished

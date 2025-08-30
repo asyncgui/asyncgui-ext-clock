@@ -55,10 +55,11 @@ class Clock:
     def current_time(self) -> TimeUnit:
         return self._cur_time
 
-    def tick(self, delta_time):
+    def advance(self, delta_time):
         '''
         Advances the clock time and triggers scheduled events accordingly.
-        The ``delta_time`` must be 0 or greater.
+
+        :param delta_time: Must be 0 or greater.
 
         .. warning::
 
@@ -87,6 +88,8 @@ class Clock:
         # swap
         self._events = events_tba
         self._events_to_be_added = events
+
+    tick = advance
 
     def schedule_interval(self, func, interval) -> ClockEvent:
         '''
@@ -133,7 +136,7 @@ class Clock:
     @types.coroutine
     def n_frames(self, n: int) -> Awaitable:
         '''
-        Waits for a specified number of times the :meth:`tick` to be called.
+        Waits for a specified number of times the :meth:`advance` to be called.
 
         .. code-block::
 

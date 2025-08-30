@@ -11,13 +11,13 @@ def test_interpolate_scalar(clock):
 
     task = start(async_fn())
     assert values == [100, ]
-    clock.tick(30)
+    clock.advance(30)
     assert values == [100, 70]
-    clock.tick(20)
+    clock.advance(20)
     assert values == [100, 70, 50, ]
-    clock.tick(40)
+    clock.advance(40)
     assert values == [100, 70, 50, 10, ]
-    clock.tick(40)
+    clock.advance(40)
     assert values == [100, 70, 50, 10, 0, ]
     assert task.finished
 
@@ -33,7 +33,7 @@ def test_interpolate_scalar_zero_duration(clock, step):
 
     task = start(async_fn())
     assert values == [100, ]
-    clock.tick(step)
+    clock.advance(step)
     assert values == [100, 0]
     assert task.finished
 
@@ -49,13 +49,13 @@ def test_interpolate_sequence(clock):
 
     task = start(async_fn())
     assert values == [0, 100] ; values.clear()
-    clock.tick(30)
+    clock.advance(30)
     assert values == [30, 70] ; values.clear()
-    clock.tick(30)
+    clock.advance(30)
     assert values == [60, 40] ; values.clear()
-    clock.tick(30)
+    clock.advance(30)
     assert values == [90, 10] ; values.clear()
-    clock.tick(30)
+    clock.advance(30)
     assert values == [100, 0] ; values.clear()
     assert task.finished
 
@@ -72,6 +72,6 @@ def test_interpolate_sequence_zero_duration(clock, step):
 
     task = start(async_fn())
     assert values == [0, 100] ; values.clear()
-    clock.tick(step)
+    clock.advance(step)
     assert values == [100, 0] ; values.clear()
     assert task.finished
