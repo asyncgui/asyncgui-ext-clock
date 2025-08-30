@@ -36,7 +36,7 @@ APIに渡す時間の単位は統一さえされていれば何でも構いま�
     while running:
         ...
 
-        dt = pygame_clock.advance(fps)
+        dt = pygame_clock.tick(fps)
         clock.advance(dt)
 
 ``Kivy`` を使っているなら以下のようになるでしょう。
