@@ -1,7 +1,5 @@
 # Clock
 
-Provides async time-related functionality.
-
 ```python
 import asyncgui
 from asyncgui_ext.clock import Clock
@@ -13,12 +11,12 @@ async def async_fn():
     print("Hello")
 
 asyncgui.start(async_fn())
-clock.tick(10)  # Advances the clock by 10 time units.
-clock.tick(10)  # Total of 20 time units. The async_fn will wake up, and prints 'Hello'.
+clock.advance(10)  # Advances the clock by 10 time units.
+clock.advance(10)  # Total of 20 time units. The async_fn will wake up, and prints 'Hello'.
 ```
 
 The example above effectively illustrate how this module works but it's not practical.
-In a real-world program, you probably want to call ``clock.tick()`` in a main loop.
+In a real-world program, you probably want to call ``clock.advance()`` in a main loop.
 For example, if you are using `PyGame`, you may want to do:
 
 ```python
@@ -29,8 +27,8 @@ clock = asyncgui_ext.clock.Clock()
 while running:
     ...
 
-    dt = pygame_clock.tick(fps)
-    clock.tick(dt)
+    dt = pygame_clock.advance(fps)
+    clock.advance(dt)
 ```
 
 ## Installation
