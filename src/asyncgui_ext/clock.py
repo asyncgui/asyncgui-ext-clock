@@ -44,8 +44,6 @@ class ClockEvent:
 
 
 class Clock:
-    __slots__ = ('_cur_time', '_events', '_events_to_be_added', '__weakref__', )
-
     def __init__(self, initial_time=0):
         self._cur_time = initial_time
         self._events: list[ClockEvent] = []
