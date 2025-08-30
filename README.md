@@ -27,7 +27,7 @@ clock = asyncgui_ext.clock.Clock()
 while running:
     ...
 
-    dt = pygame_clock.advance(fps)
+    dt = pygame_clock.tick(fps)
     clock.advance(dt)
 ```
 

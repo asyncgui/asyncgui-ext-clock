@@ -90,6 +90,7 @@ class Clock:
         self._events_to_be_added = events
 
     tick = advance
+    '''An alias of :meth:`advance`.'''
 
     def schedule_interval(self, func, interval) -> ClockEvent:
         '''
