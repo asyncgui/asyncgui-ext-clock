@@ -1,6 +1,6 @@
 [project]
 name = "asyncgui-ext-clock"
-version = "0.6.1"
+version = "0.6.2"
 description = "An event scheduler for asyncgui programs"
 authors = [{ name = "Nattōsai Mitō", email = "flow4re2c@gmail.com" }]
 requires-python = ">=3.10,<4"
